@@ -227,3 +227,254 @@ renderer.render(scene, mainCamera);
     screenPlaneMesh.layers.set(POST_LAYER);
 ```
 
+
+
+接着我们修改一下主循环中渲染流程
+
+第一次渲染时，我们将结果绘制到`RenderTarget`上面，并且设置场景的背景色为 `0xff6600`这是为了将前后两次渲染的结果更好的区分开来。
+
+
+
+第二次渲染时，我们将结果真正的绘制到canvas画布上面，所以要使用`renderer.setRenderTarget(null)`
+
+```typescript
+const mainLoop = () => {
+    controls.update();
+
+    renderer.setRenderTarget(rt);
+    renderer.clear();
+    scene.background = new Color(0xff6600);
+    renderer.render(scene, mainCamera);
+
+    renderer.setRenderTarget(null);
+
+    scene.background = new Color(0xcccccc);
+    renderer.render(scene, postCamera);
+
+    requestAnimationFrame(mainLoop);
+};
+
+```
+
+ 最后的结果如下：
+
+![image-20231027103225633](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/image-20231027103225633.png)
+
+我们简单解释一下这个图像是如何形成的：
+
+第一次渲染时，渲染了一个立方体到场景中，场景中的背景色是 `0xff6600`，也就是橘红色。
+
+![image-20231027103404208](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/image-20231027103404208.png)
+
+第二次渲染时，仅仅只渲染`screenPlaneMesh`，也就是一个平面。我们将第一次渲染的结果作为纹理贴到这个平面上，形成了下面的结果：
+
+![image-20231027103510325](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/image-20231027103510325.png)
+
+由于这个平面没有占据整个屏幕空间，所以你可以看到橘红色的背景旁边留有灰色的背景。
+
+
+
+你可能注意到前后两次渲染的结果存在一定的色差，这是因为两次渲染输出的颜色空间不一致导致的，这一部分的内容不在今天的讨论范围之内，我们先略过。
+
+
+
+## 渲染结果变形
+
+现在还有另一个问题需要我们处理，由于画布的尺寸与我们第二次渲染的物体的尺寸不一致导致渲染的内容有一些变形，我们需要做一些处理。如何处理这个问题有很多解决办法，今天我们介绍一种让第二次渲染的结果与原来重合的方式。
+
+<img src="https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/20231027104604.png" style="zoom: 33%;" />
+
+在上面的图中显示出了画布边缘的坐标位置。如果要让图像不变形，那么我需要让“平面”（橘红色区域）的uv坐标与原始图像对应起来。
+
+我们可以直接使用顶点着色器最后计算出来的坐标（NDC坐标）。然后再将其映射到 0 ~ 1的范围，最后进行采样。
+
+
+
+我这样说起来可能比较抽象，我们还是废话不多说，直接上代码吧！
+
+以下是顶点着色器的代码：
+
+```glsl
+varying vec4 vScreenPos;
+void main () {
+    vec4 mvPosition = vec4(position, 1.0);
+    mvPosition = modelViewMatrix * mvPosition;
+    vScreenPos = projectionMatrix * mvPosition;
+    gl_Position = vScreenPos;
+}
+```
+
+顶点着色器的代码还是很好懂的，我们声明了一个 `vScreenPos`的变量，它代表了顶点在NDC空间的位置，`varying`修饰符表示需要在光栅化阶段对其进行插值，我们后续可以在片段着色器中使用。
+
+下面是片段着色器的代码：
+
+```glsl
+varying vec4 vScreenPos;
+uniform sampler2D mainTex;
+uniform sampler2D noiseTex;
+uniform float time;
+
+void main () {
+    vec3 screenPos = vScreenPos.xyz / vec3(vScreenPos.w);
+    // 将坐标从 -1 ~ 1映射到 0 ~ 1 
+    vec2 uv = screenPos.xy * 0.5 + 0.5;
+    // 纹理采样
+    vec4 color = texture(mainTex, uv);
+    color.rgb = pow(color.rgb, vec3(1. / 2.2));
+    gl_FragColor = color;
+}
+```
+
+
+
+由于我们使用了自定义的着色器代码，所以材质也需要修改为：
+
+```typescript
+	const screenMat = new ShaderMaterial({
+        vertexShader: screenVert,
+        fragmentShader: screenFrag,
+        depthTest: false,
+        uniforms: {
+            mainTex: {
+                value: rt.texture,
+            },
+        },
+    });
+    const screenPlaneMesh = new Mesh(planeGeo, screenMat);
+```
+
+
+
+最后的结果如下：
+
+![image-20231027105342386](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/image-20231027105342386.png)
+
+对比上面的图，我们不难发现，我们的立方体已经不再“变形”。
+
+OK，通过上面的一系列的操作，我们相当于具备了“**抓取屏幕空间内容**”的能力。并且可以只**渲染部分内容**。那么我们就实现一个立方体的部分热浪效果吧~
+
+
+
+# 热浪效果
+
+我们实现下面这样的一个“热浪效果”，并且只给立方体的一部分应用。我们可以看到在下图中，只有背景为橘红色的那一半立方体有被热浪扭曲的效果。
+
+![20231027105907_rec_](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/20231027105907_rec_.gif)
+
+
+
+这是如何实现的呢？很简单，首先我们要利用上面我们搭建好的抓取屏幕空间内容的代码框架，然后引入一张噪声图，再对噪声图进行采样，将原始的uv坐标加上一个噪声就可以实现这样的一个效果了。噪声图如下：
+
+![noise_a](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/noise_a.jpg)
+
+我们修改片段着色器中的代码：
+
+```glsl
+varying vec4 vScreenPos;
+uniform sampler2D mainTex;
+uniform sampler2D noiseTex;
+// 新引入一个全局时间，用于修改uv坐标
+uniform float time;
+
+void main () {
+    vec3 screenPos = vScreenPos.xyz / vec3(vScreenPos.w);
+    // 乘1.5 和 加 time * 0.02 是属于参数，这里偷懒了。
+    vec2 noiseUv = screenPos.xy * 1.5 + time * 0.02;
+	
+    // 将noiseUv 从 -1~1 转换到 0 ~ 1 区间
+    noiseUv = noiseUv * 0.5 + 0.5;
+    // 对纹理进行采样，将噪声的值从 0 ~ 1 转换到 -1 ~ 1
+    vec2 noise = texture(noiseTex, noiseUv).rr * 2.0 - 1.0;
+    
+    vec2 uv = screenPos.xy * 0.5 + 0.5;
+
+    // 利用噪声对原始的 uv 坐标进行干扰
+    uv += noise * 0.02;
+    vec4 color = texture(mainTex, uv);
+    
+    // 进行颜色空间转换，此处略过
+    color.rgb = pow(color.rgb, vec3(1. / 2.2));
+    gl_FragColor = color;
+}
+```
+
+
+
+代码中的关键部分已在代码的注释中注明，请仔细参阅。
+
+我们还需要修改材质中的参数以及主循环的代码
+
+```typescript
+
+    const screenMat = new ShaderMaterial({
+        vertexShader: screenVert,
+        fragmentShader: screenFrag,
+        depthTest: false,
+        uniforms: {
+            mainTex: {
+                value: rt.texture,
+            },
+            noiseTex: {
+                value: noiseTex,
+            },
+            time: {
+                value: 1,
+            },
+        },
+    });
+	// 为了让效果更明显一点，把平面往右边移动1个单位长度
+	screenPlaneMesh.position.set(1, 0, 0);
+	let globalTime = 0.0;
+	
+	// 该语句也同样十分重要，我们需要在主循环中手动控制什么时候清除颜色缓冲，什么时候清除深度缓冲
+    renderer.autoClear = false;
+    const mainLoop = () => {
+        // 为了让画面动起来，所以需要引入一个全局时间
+        globalTime += 0.1;
+        screenMat.uniforms.time.value = globalTime;
+
+        controls.update();
+
+        renderer.setRenderTarget(rt);
+        // 设置背景相当于清除了颜色缓冲区
+        scene.background = new Color(0xff6600);
+        renderer.clear();
+        renderer.render(scene, mainCamera);
+
+        renderer.setRenderTarget(null);
+        scene.background = new Color(0xcccccc);
+
+        renderer.render(scene, mainCamera);
+		
+        // 设置背景颜色设置为null 等同于不清除颜色缓冲区
+        scene.background = null;
+        renderer.render(scene, postCamera);
+
+        requestAnimationFrame(mainLoop);
+    };
+```
+
+
+
+以上就是全部的内容了，我们可以利用 spector.js来查看是如何绘制的：
+
+
+
+![image-20231027111209367](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/image-20231027111209367.png)
+
+![](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/image-20231027111219795.png)
+
+![image-20231027111237471](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/image-20231027111237471.png)
+
+第一张图中下面的文字“WebGLFramebuffer” 可以理解为是绘制到 `RenderTarget`上的内容。
+
+
+
+# 总结
+
+总结一下今天所学的知识吧~
+
+`RenderTarget`如果要用一句话来概括的话，我认为它就是一张离屏的canvas画布。后续我们可以将这张画布作为纹理使用。
+
+另外，我们还学习了将屏幕空间的内容映射到物体上且保证它不变形，并且实现了一个热浪扭曲的效果。限于作者的文笔水平有限，可能讲的比较抽象，还望读者结合代码实际操练一番。下面是完整demo示例：
+
