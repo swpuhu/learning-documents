@@ -95,7 +95,7 @@ GDT (Global Descriptor Table)	GDTR (Global Descriptor Table Register)
 
 LDT (Local Descriptor Table)		LDTR (Local Descriptor Table Register)
 
-CPL (Current Privilege Level)		当前请求特权级
+CPL (Current Privilege Level)		当前请求特权级  (理解：CPL 不在物理上存在，理解为在CPU内存，CPL == RPL)
 
 DPL (Descriptor Privilege Level)	访问段的最低要求特权级
 
@@ -131,7 +131,25 @@ x86: 6 Byte
 
 ### 段描述符
 
-![image.png](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/doc/1664933163231-a737cebe-e875-45a9-9ee7-7240f0c8ee8a.png)
+![image.png](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/doc/1664933163231-a737cebe-e875-45a9-9ee7-7240f0c8ee8a-20231101171249530.png)
 
 1. 先检查P位， P == 1时才会继续，P == 0 表示无效段
 2. 检查DPL
+3. 检查S位
+   - S == 0 表示系统段
+   - S == 1 表示代码或数据段 --> 再检查 Type 来判断是代码段还是数据段
+
+![204e0a93908b463cbfef65597813d694_1135275-20190930173435200-1337859686.png](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/doc/1664933420354-50051636-2543-4038-b1cf-e13262b42d75.png)
+
+4. 取base，limit
+   1. 如果base + offset <= limit 
+
+
+
+
+
+32位 段大小：0~4G，类型为代码段的描述符如下：
+
+0000	0000	1100	1111	1001	1000	0000	0000
+
+0000	0000	0000	0000	1111	1111	1111	1111
