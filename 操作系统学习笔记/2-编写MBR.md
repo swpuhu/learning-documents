@@ -109,7 +109,7 @@ dd if=./mbr.bin of=./hd60M.img bs=512 count=1 conv=notrunc
 
 
 
-
+![image-20231123113904200](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/doc/image-20231123113904200.png)
 
 ## bochs调试常用命令
 

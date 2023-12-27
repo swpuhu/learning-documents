@@ -1,4 +1,4 @@
-操作系统学习（三）—— MBR操作硬盘
+# 操作系统学习（三）—— MBR操作硬盘
 
 
 
@@ -21,3 +21,5 @@
 
 
 ![image-20231122191538822](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/doc/image-20231122191538822.png)
+
+![img](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/doc/1655693937!figure_largeshow.jpg)
