@@ -102,3 +102,47 @@ at any given moment / time / day
 
 ***I'm with you on this one.*** means I agree with you on this point.
 
+I will greet this day with love in my heart.
+
+
+
+***powerhouse*** means very strong great team.
+
+That guy is powerhouse, because he has 5,000 pounds.
+
+***a bump***
+
+![image-20231229104510922](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/doc/image-20231229104510922.png)
+
+***a set*** 
+
+![image-20231229104532948](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/doc/image-20231229104532948.png)
+
+***Let's serve*** 
+
+![image-20231229104618857](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/doc/image-20231229104618857.png)
+
+***ahead of us***
+
+something will happen in very near future.
+
+***without doubt***
+
+***this is will prove to be...***
+
+***great play***
+
+
+
+***matter*** 
+
+anything occupies the space and has mass.
+
+***particle***
+
+***anti-particle***
+
+***drift of matter*** means moving slowly in universe.
+
+***thus***
+
