@@ -146,3 +146,12 @@ anything occupies the space and has mass.
 
 ***thus***
 
+
+
+***ran into sb*** means casually meet sb.
+
+lose your temper
+
+to freak out
+
+***to shriek*** means to shot in very high pitch
