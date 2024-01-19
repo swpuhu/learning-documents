@@ -53,8 +53,6 @@ $$
 f_{cook-torrance} = \frac{DFG}{4(\omega_o\cdot n)(\omega_i) \cdot n}
 $$
 
-
-
 根据上述理论，我们可以编写一些伪代码：
 
 ```typescript
