@@ -464,7 +464,7 @@ color = pow(color, vec3(1.0/2.2));
 
 以上就是我们实现PBR直接光照的核心代码了，全部完整的代码及实例请参考这里：[Three-PBR-direct - 码上掘金 (juejin.cn)](https://code.juejin.cn/pen/7325389918245486633)
 
-
+<img src="https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/doc/image-20240122120147939.png" alt="image-20240122120147939" style="zoom:50%;" />
 
 # 总结
 
