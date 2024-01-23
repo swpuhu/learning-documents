@@ -427,3 +427,11 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 最终的结果如下：
 
 ![image-20240122182648764](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/doc/image-20240122182648764.png)
+
+# 总结
+
+本文介绍了IBL中漫反射环境光计算的内容，其关键在于对环境贴图进行采样再求平均值，在最后的PBR光照计算中，获取之前获得的环境光辐照图，然后乘以$k_d$的值，再加上直接光照的结果就可以得到最终的结果了。
+
+
+
+本项目的完整代码可以在此进行查看：
