@@ -582,3 +582,12 @@ void main() {
 
 最终的结果如下：
 
+![image-20240124112655272](https://picbed-1255660905.cos.ap-chengdu.myqcloud.com/doc/image-20240124112655272.png)
+
+# 总结
+
+在IBL镜面反射的部分比漫反射的部分稍微复杂了一丢丢，实际上是复杂了很多，但是由于我们跳过了理论的部分，所以看起来只是多了一个辐照图mipmap的生成和BRDF积分项的预计算。不过我们也不用太过纠结啦，最后结果出来就好啦，毕竟咱也不是搞理论的。
+
+
+
+最终的代码点此查看：[Three-PBR-IBL-Finished - 码上掘金 (juejin.cn)](https://code.juejin.cn/pen/7327504938668392483)
