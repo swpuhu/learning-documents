@@ -434,4 +434,4 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 
 
 
-本项目的完整代码可以在此进行查看：
+本项目的完整代码可以在此进行查看：[Three-PBR-direct - 码上掘金 (juejin.cn)](https://code.juejin.cn/pen/7325389918245486633)
