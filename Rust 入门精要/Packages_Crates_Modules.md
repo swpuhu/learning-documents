@@ -64,3 +64,33 @@ use std::io::{self, Write}
 use std::collections::*
 ```
 
+
+
+### Mono-Repo
+
+Cargo支持 mono-repo，详细参见 cargo.toml中的 *[workspace]*
+
+
+
+#### 通过 `cargo install` 来安装可执行的包
+
+类似于npm，可以通过 `cargo install xxx` 来安装某个依赖。
+
+注意~ 通过此种方式只能安装具有可执行文件的包
+
+
+
+### 安装的依赖在哪里？
+
+默认位于 `$HOME/.cargo/bin`
+
+
+
+## 扩展Cargo的子命令
+
+如果你在你的用户路径中`$PATH`中有可执行文件名为 "cargo-xxx" 你就可以通过 `cargo xxx`来执行改可执行文件。
+
+你也可以通过 `cargo --list`命令来查看cargo的子命令。
+
+
+
